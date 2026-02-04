@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check event folder structure
+      - name: Validate PR
+        env:
+          AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
         run: |
           ERRORS=0
           WARNINGS=0
@@ -19,7 +21,63 @@ jobs:
           git fetch origin ${{ github.base_ref }} --depth=1
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
-          # Check event folder naming convention
+          echo "PR author association: $AUTHOR_ASSOCIATION"
+          echo "Changed files:"
+          echo "$CHANGED"
+          echo ""
+
+          # --- Admin bypass ---
+          # OWNER and MEMBER are org members — trusted to touch anything.
+          # Everyone else is locked to a single event folder.
+          SKIP_SCOPE="false"
+          if [[ "$AUTHOR_ASSOCIATION" == "OWNER" || "$AUTHOR_ASSOCIATION" == "MEMBER" ]]; then
+            echo "::notice::Admin bypass — org member, skipping scope enforcement"
+            SKIP_SCOPE="true"
+          fi
+
+          # --- Scope enforcement (non-admins only) ---
+          if [[ "$SKIP_SCOPE" == "false" ]]; then
+            # Every changed file must be under events/YYYY/MM/YYYY-MM-DD-city/
+            # Extract the event folder from each changed file path
+            EVENT_FOLDERS=""
+            for file in $CHANGED; do
+              if [[ "$file" =~ ^events/[0-9]{4}/[0-9]{2}/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z].* ]]; then
+                # Extract the event folder (first 4 path segments)
+                EVENT_FOLDER=$(echo "$file" | cut -d'/' -f1-4)
+                EVENT_FOLDERS="$EVENT_FOLDERS $EVENT_FOLDER"
+              else
+                echo "::error::File outside allowed event scope: $file"
+                echo "  External contributors may only modify files within a single events/YYYY/MM/YYYY-MM-DD-city/ folder."
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+
+            # Enforce single event folder
+            UNIQUE_FOLDERS=$(echo "$EVENT_FOLDERS" | tr ' ' '\n' | sort -u | grep -v '^$')
+            FOLDER_COUNT=$(echo "$UNIQUE_FOLDERS" | wc -l | tr -d ' ')
+            if [[ $FOLDER_COUNT -gt 1 ]]; then
+              echo "::error::PR touches multiple event folders. Submit one PR per event."
+              echo "  Found: $UNIQUE_FOLDERS"
+              ERRORS=$((ERRORS + 1))
+            fi
+          fi
+
+          # --- Blocked file types (all PRs) ---
+          for file in $CHANGED; do
+            # Video files — link to YouTube instead
+            if [[ "$file" =~ \.(mp4|mov|avi|mkv|webm)$ ]]; then
+              echo "::error::Video file not allowed: $file — link to YouTube/external hosting instead"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            # Symlinks
+            if [[ -L "$file" ]]; then
+              echo "::error::Symlinks not allowed: $file"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # --- Event folder naming convention (all PRs) ---
           for dir in $(echo "$CHANGED" | grep '^events/' | cut -d'/' -f1-4 | sort -u); do
             if [[ "$dir" =~ ^events/[0-9]{4}/[0-9]{2}/[0-9]{4}-[0-9]{2}-[0-9]{2}-.+ ]]; then
               EVENT_DIR="$dir"
@@ -39,7 +97,7 @@ jobs:
             fi
           done
 
-          # Check file sizes (2MB limit)
+          # --- File size check (all PRs) ---
           for file in $CHANGED; do
             if [[ -f "$file" ]]; then
               SIZE=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo 0)
