@@ -14,7 +14,7 @@ The system uses Luma as the source of truth. No manual approval, no org membersh
 
 ### Trust Chain
 
-1. **Anthropic** creates the event on `luma.com/claudecommunity` (Claude Community calendar) and adds the event leader as a host
+1. The event is listed on the `luma.com/claudecommunity` (Claude Community calendar) with the event leader as a host
 2. **Event leader** adds GitHub usernames of speakers/contributors in the Luma event description (prefixed with `@`, e.g. `@nfrith`). Only the event description counts.
 3. **Speaker** runs `/add-event-material` in Claude Code, or manually creates their folder following CONTRIBUTING.md
 4. **Speaker** opens a PR. The Claude Code Action runs `/validate-pr` to verify the contributor against the Luma event page.
@@ -73,7 +73,7 @@ hub/
 
 ## Governance
 
-- **Admins** (2-3): Nick + Anthropic rep. Org-level admin.
+- **Admins** (2-3): Org-level admin.
 - **Leaders** (event leaders): Write access to repo. Review PRs for their events.
 - **External contributors** (speakers): Fork + PR. No org membership needed. Validated via Luma.
 

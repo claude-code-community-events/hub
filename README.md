@@ -4,7 +4,7 @@ Shared resources and event materials for Claude Code community event leaders wor
 
 ## How It Works
 
-1. **Anthropic** creates the event on the [Claude Community calendar](https://luma.com/claudecommunity)
+1. The event is listed on the [Claude Community calendar](https://luma.com/claudecommunity) with the event leader as a host
 2. **Event leader** adds speaker GitHub usernames (e.g., `@nfrith`) in the Luma event description
 3. **Speaker** runs `/add-event-material` in Claude Code or Cowork, provides the Luma URL, and opens a PR
 4. **GitHub Action** validates the PR automatically — checks the contributor's `@username` is in the Luma event description
