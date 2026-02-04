@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Community Events — Verification System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #8b949e;
+    margin-bottom: 40px;
+  }
+
+  .subtitle code {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 12px;
+    color: #e6edf3;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #21262d;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #8b949e;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-dot.luma { background: #f97316; }
+  .legend-dot.github { background: #58a6ff; }
+  .legend-dot.auto { background: #a371f7; }
+
+  /* Flow spine */
+  .flow {
+    position: relative;
+    padding-left: 60px;
+  }
+
+  .flow::before {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 24px;
+    bottom: 60px;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      #f97316 0%,
+      #f97316 22%,
+      #58a6ff 22%,
+      #58a6ff 48%,
+      #a371f7 48%,
+      #a371f7 82%,
+      #30363d 82%,
+      #30363d 100%
+    );
+  }
+
+  /* Flow node */
+  .flow-node {
+    position: relative;
+    margin-bottom: 0;
+    padding-bottom: 32px;
+  }
+
+  .flow-node:last-child {
+    padding-bottom: 0;
+  }
+
+  .node-dot {
+    position: absolute;
+    left: -60px;
+    top: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    z-index: 2;
+  }
+
+  .node-dot.luma {
+    background: #1a1408;
+    border: 2px solid #f97316;
+    color: #f97316;
+  }
+
+  .node-dot.github {
+    background: #0d1a2e;
+    border: 2px solid #58a6ff;
+    color: #58a6ff;
+  }
+
+  .node-dot.auto {
+    background: #1a0d2e;
+    border: 2px solid #a371f7;
+    color: #a371f7;
+  }
+
+  .node-dot.outcome-pass {
+    background: #0d2212;
+    border: 2px solid #3fb950;
+    color: #3fb950;
+  }
+
+  .node-dot.outcome-fail {
+    background: #2d0d0d;
+    border: 2px solid #f85149;
+    color: #f85149;
+  }
+
+  .node-content {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  .node-content.luma {
+    border-color: #f9731666;
+  }
+
+  .node-content.github {
+    border-color: #58a6ff66;
+  }
+
+  .node-content.auto {
+    border-color: #a371f766;
+  }
+
+  .node-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .node-label.luma { color: #f97316; }
+  .node-label.github { color: #58a6ff; }
+  .node-label.auto { color: #a371f7; }
+
+  .node-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin-bottom: 4px;
+  }
+
+  .node-desc {
+    font-size: 15px;
+    color: #8b949e;
+    line-height: 1.5;
+  }
+
+  .node-desc code {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+    color: #e6edf3;
+  }
+
+  .node-desc strong {
+    color: #e6edf3;
+  }
+
+  /* Luma mockup */
+  .luma-mockup {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #8b949e;
+    position: relative;
+  }
+
+  .luma-mockup::before {
+    content: 'LUMA EVENT DESCRIPTION';
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    background: #0d1117;
+    padding: 0 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #484f58;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .luma-mockup .hl {
+    color: #f97316;
+    font-weight: 600;
+  }
+
+  .luma-mockup .faded {
+    color: #484f58;
+  }
+
+  /* SVG connector arrow between nodes */
+  .connector {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    height: 32px;
+    position: relative;
+  }
+
+  /* Pipeline as connected nodes */
+  .pipeline-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 12px;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    font-size: 13px;
+    position: relative;
+  }
+
+  .pipeline-step .p-num {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    background: #a371f720;
+    color: #a371f7;
+    border: 1px solid #a371f744;
+  }
+
+  .pipeline-step .p-label {
+    color: #e6edf3;
+    flex: 1;
+    font-size: 12px;
+  }
+
+  .pipeline-step .p-detail {
+    color: #484f58;
+    font-size: 11px;
+  }
+
+  .pipeline-arrow {
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 22px;
+    height: 16px;
+  }
+
+  .pipeline-arrow svg {
+    overflow: visible;
+  }
+
+  /* Outcome fork */
+  .outcome-fork {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .outcome-box {
+    flex: 1;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+    border: 1px solid;
+  }
+
+  .outcome-box.pass {
+    border-color: #3fb95044;
+    background: #0d2212;
+  }
+
+  .outcome-box.fail {
+    border-color: #f8514944;
+    background: #2d0d0d;
+  }
+
+  .outcome-box .o-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .outcome-box.pass .o-icon { color: #3fb950; }
+  .outcome-box.fail .o-icon { color: #f85149; }
+
+  .outcome-box .o-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .outcome-box.pass .o-title { color: #3fb950; }
+  .outcome-box.fail .o-title { color: #f85149; }
+
+  .outcome-box .o-desc {
+    font-size: 11px;
+    color: #8b949e;
+  }
+
+  .outcome-box .o-desc code {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 11px;
+    color: #e6edf3;
+  }
+
+  /* Outcome SVG fork connector */
+  .fork-connector {
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* Insight */
+  .insight {
+    background: #161b22;
+    border: 1px solid #f9731633;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 40px;
+  }
+
+  .insight h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f97316;
+    margin-bottom: 8px;
+  }
+
+  .insight ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .insight li {
+    font-size: 12px;
+    color: #8b949e;
+    line-height: 1.5;
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .insight li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #f9731666;
+  }
+
+  .insight li strong {
+    color: #e6edf3;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Verification System</h1>
+  <p class="subtitle">
+    Automated trust chain for <code>claude-code-community-events/hub</code>
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot luma"></div> Luma (source of truth)</div>
+    <div class="legend-item"><div class="legend-dot github"></div> GitHub (contribution)</div>
+    <div class="legend-item"><div class="legend-dot auto"></div> Automated pipeline</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- Node 1: Anthropic creates event -->
+    <div class="flow-node">
+      <div class="node-dot luma">1</div>
+      <div class="node-content luma">
+        <div class="node-label luma">Anthropic</div>
+        <div class="node-title">Anthropic Creates Event on Luma</div>
+        <div class="node-desc">
+          Creates the event on the <strong>Claude Community calendar</strong>
+          and adds the event leader as a host. This already happens today.
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 2: Event leader adds GitHub IDs -->
+    <div class="flow-node">
+      <div class="node-dot luma">2</div>
+      <div class="node-content luma">
+        <div class="node-label luma">Event Leader</div>
+        <div class="node-title">Add GitHub IDs to Event Description</div>
+        <div class="node-desc">
+          Add speaker/contributor GitHub usernames <strong>anywhere</strong> in the event page —
+          description, schedule, speaker bios. The validation scans the entire event.
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <div class="luma-mockup" style="flex: 1;">
+            <strong style="color: #e6edf3;">Example: In Description</strong><br><br>
+            <span class="faded">Join us for Claude Code Miami...</span><br><br>
+            <span class="hl">GitHub Contributors:</span><br>
+            <span class="hl">@justinelliott, @robertogarcia, @nfrith</span>
+          </div>
+          <div class="luma-mockup" style="flex: 1;">
+            <strong style="color: #e6edf3;">Example: In Schedule</strong><br><br>
+            <span class="faded">7:45 PM — Workshop: Build with Claude</span><br>
+            <span class="hl">Speaker: @justinelliott</span><br>
+            <span class="faded">Hands-on guided session, bring your laptops!</span><br><br>
+            <span class="faded">8:45 PM — Showcase &amp; Share</span><br>
+            <span class="hl">Speaker: @robertogarcia</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 3: Fork + add materials -->
+    <div class="flow-node">
+      <div class="node-dot github">3</div>
+      <div class="node-content github">
+        <div class="node-label github">Speaker</div>
+        <div class="node-title">Open Claude Code or Cowork</div>
+        <div class="node-desc">
+          Run <code>/add-event-material</code> — the skill asks for your Luma event URL,
+          scaffolds the folder, and guides you through adding your content.
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 4: Open PR -->
+    <div class="flow-node">
+      <div class="node-dot github">4</div>
+      <div class="node-content github">
+        <div class="node-label github">Speaker</div>
+        <div class="node-title">Open Pull Request</div>
+        <div class="node-desc">
+          PR path maps to the Luma event. No issue, no manual approval, no org membership.
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 5: Automated validation pipeline -->
+    <div class="flow-node">
+      <div class="node-dot auto">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L12.5 7H17L13.5 10.5L15 16L10 13L5 16L6.5 10.5L3 7H7.5L10 2Z" fill="#a371f7"/>
+        </svg>
+      </div>
+      <div class="node-content auto">
+        <div class="node-label auto">GitHub Action &mdash; Zero Human Work</div>
+        <div class="node-title">Validation Pipeline</div>
+
+        <div class="pipeline-flow">
+          <div class="pipeline-step">
+            <div class="p-num">1</div>
+            <span class="p-label">Extract event from PR path</span>
+            <span class="p-detail">date + city</span>
+          </div>
+
+          <div class="pipeline-arrow">
+            <svg width="12" height="16"><line x1="6" y1="0" x2="6" y2="10" stroke="#a371f7" stroke-width="1.5"/><polygon points="2,10 6,16 10,10" fill="#a371f7"/></svg>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="p-num">2</div>
+            <span class="p-label">Match event on Luma calendar</span>
+            <span class="p-detail">API query</span>
+          </div>
+
+          <div class="pipeline-arrow">
+            <svg width="12" height="16"><line x1="6" y1="0" x2="6" y2="10" stroke="#a371f7" stroke-width="1.5"/><polygon points="2,10 6,16 10,10" fill="#a371f7"/></svg>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="p-num">3</div>
+            <span class="p-label">Verify "Claude Community" in Hosted By</span>
+            <span class="p-detail">official event</span>
+          </div>
+
+          <div class="pipeline-arrow">
+            <svg width="12" height="16"><line x1="6" y1="0" x2="6" y2="10" stroke="#a371f7" stroke-width="1.5"/><polygon points="2,10 6,16 10,10" fill="#a371f7"/></svg>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="p-num">4</div>
+            <span class="p-label">Check PR author in event description</span>
+            <span class="p-detail">authorization</span>
+          </div>
+
+          <div class="pipeline-arrow">
+            <svg width="12" height="16"><line x1="6" y1="0" x2="6" y2="10" stroke="#a371f7" stroke-width="1.5"/><polygon points="2,10 6,16 10,10" fill="#a371f7"/></svg>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="p-num">5</div>
+            <span class="p-label">Validate folder structure + file sizes</span>
+            <span class="p-detail">convention</span>
+          </div>
+
+          <div class="pipeline-arrow">
+            <svg width="12" height="16"><line x1="6" y1="0" x2="6" y2="10" stroke="#a371f7" stroke-width="1.5"/><polygon points="2,10 6,16 10,10" fill="#a371f7"/></svg>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="p-num">6</div>
+            <span class="p-label">Claude Code Action reviews content</span>
+            <span class="p-detail">quality gate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outcome node -->
+    <div class="flow-node" style="padding-bottom: 0;">
+      <div class="node-dot" style="background: #161b22; border: 2px solid #30363d; color: #8b949e; font-size: 14px;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1L11 6.5H17L12 10L14 16L9 12.5L4 16L6 10L1 6.5H7L9 1Z" stroke="#8b949e" stroke-width="1.2" fill="none"/>
+        </svg>
+      </div>
+      <div class="node-content" style="border-color: #30363d; background: #161b22;">
+        <div class="node-title" style="margin-bottom: 8px;">Outcome</div>
+
+        <!-- Fork SVG -->
+        <div class="fork-connector">
+          <svg width="100%" height="40" viewBox="0 0 400 40" preserveAspectRatio="xMidYMid meet">
+            <line x1="200" y1="0" x2="200" y2="16" stroke="#30363d" stroke-width="2"/>
+            <line x1="100" y1="16" x2="300" y2="16" stroke="#30363d" stroke-width="2"/>
+            <line x1="100" y1="16" x2="100" y2="28" stroke="#3fb950" stroke-width="2"/>
+            <line x1="300" y1="16" x2="300" y2="28" stroke="#f85149" stroke-width="2"/>
+            <polygon points="96,28 100,36 104,28" fill="#3fb950"/>
+            <polygon points="296,28 300,36 304,28" fill="#f85149"/>
+          </svg>
+        </div>
+
+        <div class="outcome-fork">
+          <div class="outcome-box pass">
+            <div class="o-title">All Checks Pass</div>
+            <div class="o-desc">Labeled <code>verified</code>. Auto-merge.</div>
+          </div>
+          <div class="outcome-box fail">
+            <div class="o-title">Check Fails</div>
+            <div class="o-desc">Labeled <code>needs-verification</code>. Bot explains fix.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="insight">
+    <h3>Why This Works</h3>
+    <ul>
+      <li><strong>Luma is already the source of truth.</strong> Events on the Claude Community calendar are legitimate by definition.</li>
+      <li><strong>Access control lives where leaders already work.</strong> Adding GitHub IDs to a Luma description is the only new step.</li>
+      <li><strong>Zero human review for verification.</strong> The Action validates against Luma. Humans only intervene on failure.</li>
+      <li><strong>No org membership required.</strong> Fork, PR, and the Luma description is your access list.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
