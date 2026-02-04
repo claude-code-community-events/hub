@@ -46,9 +46,30 @@ The trust chain is:
 
 See [docs/verification-flow.html](docs/verification-flow.html) for a visual diagram of the system.
 
-## Contributing
+## Repo Structure
 
-_Contributing guide coming soon._
+```
+events/YYYY/MM/YYYY-MM-DD-city/     # one folder per event
+├── README.md                        # event metadata, hosts, links
+└── speakers/
+    └── your-name/                   # your sandbox — put whatever you want
+```
+
+Events organized by year/month for scale. Speaker folders are black boxes — your space, your structure.
+
+## Quick Start
+
+**With Claude Code or Cowork:**
+```
+/add-event-material
+```
+
+**Manual:** See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**CLI scaffolding:**
+```bash
+./scripts/new-event.sh --date 2026-02-07 --city chiang-mai --speakers "Nick Frith" "Ian Borders"
+```
 
 ## License
 

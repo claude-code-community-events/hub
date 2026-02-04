@@ -1,0 +1,80 @@
+name: Validate PR Structure
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check event folder structure
+        run: |
+          ERRORS=0
+          WARNINGS=0
+
+          # Get list of changed files
+          git fetch origin ${{ github.base_ref }} --depth=1
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          # Check files are in expected locations
+          for file in $CHANGED; do
+            case "$file" in
+              events/*|.claude/*|plugin/*|docs/*|.github/*|README.md|CLAUDE.md|CONTRIBUTING.md|CODE_OF_CONDUCT.md|LICENSE|.gitattributes)
+                ;; # allowed locations
+              *)
+                echo "::error::File in unexpected location: $file"
+                ERRORS=$((ERRORS + 1))
+                ;;
+            esac
+          done
+
+          # Check event folder naming convention
+          for dir in $(echo "$CHANGED" | grep '^events/' | cut -d'/' -f1-4 | sort -u); do
+            if [[ "$dir" =~ ^events/[0-9]{4}/[0-9]{2}/[0-9]{4}-[0-9]{2}-[0-9]{2}-.+ ]]; then
+              EVENT_DIR="$dir"
+
+              # Check event README exists
+              if [[ ! -f "${EVENT_DIR}/README.md" ]]; then
+                echo "::error::Missing README.md in ${EVENT_DIR}"
+                ERRORS=$((ERRORS + 1))
+              fi
+            elif [[ "$dir" =~ ^events/[0-9]{4}/[0-9]{2}$ ]] || [[ "$dir" =~ ^events/[0-9]{4}$ ]] || [[ "$dir" == "events" ]]; then
+              : # year/month directories are fine
+            elif [[ "$dir" == "events/README.md" ]]; then
+              : # events README is fine
+            else
+              echo "::error::Event folder doesn't match YYYY-MM-DD-city pattern: $dir"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # Check file sizes
+          for file in $CHANGED; do
+            if [[ -f "$file" ]]; then
+              SIZE=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo 0)
+              if [[ $SIZE -gt 52428800 ]]; then
+                echo "::error::File exceeds 50MB limit: $file ($(($SIZE / 1048576))MB)"
+                ERRORS=$((ERRORS + 1))
+              elif [[ $SIZE -gt 5242880 ]]; then
+                echo "::warning::Large file (>5MB): $file ($(($SIZE / 1048576))MB)"
+                WARNINGS=$((WARNINGS + 1))
+              fi
+            fi
+          done
+
+          # TODO: Luma API validation
+          # - Extract event date + city from PR path
+          # - Query luma.com/claudecommunity API for matching event
+          # - Verify "Claude Community" in Hosted By
+          # - Check PR author's GitHub ID in event description
+          # Requires: LUMA_API_KEY secret and Luma Plus subscription on the calendar
+
+          echo ""
+          echo "Validation complete: $ERRORS error(s), $WARNINGS warning(s)"
+
+          if [[ $ERRORS -gt 0 ]]; then
+            exit 1
+          fi

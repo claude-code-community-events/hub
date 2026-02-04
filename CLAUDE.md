@@ -46,11 +46,8 @@ hub/
 │           └── YYYY-MM-DD-city/
 │               ├── README.md
 │               └── speakers/
-│                   └── speaker-name/
-│                       ├── README.md
-│                       ├── slides/
-│                       ├── demo/
-│                       └── resources/
+│                   └── speaker-name/    # black box — contributor's sandbox
+│                       └── (whatever they want)
 ├── tools/                    # Shared community tools
 ├── templates/                # Copy-paste starters
 ├── scripts/                  # CLI scaffolding tools
@@ -70,7 +67,7 @@ hub/
 ### Folder Naming
 
 - Events: `events/YYYY/MM/YYYY-MM-DD-city` (year/month nesting for scale — ~30 events/month)
-- Speaker folders: lowercase, hyphenated GitHub username
+- Speaker folders: lowercase, hyphenated name (e.g., `nick-frith`)
 - Tools: `tools/tool-name/`
 
 ---

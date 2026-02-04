@@ -1,0 +1,11 @@
+{
+  "name": "claude-code-community-events",
+  "version": "0.1.0",
+  "description": "Contribute event materials to the Claude Code Community Events hub.",
+  "author": {
+    "name": "Nick Frith",
+    "email": "nf@s9t.dev"
+  },
+  "repository": "https://github.com/claude-code-community-events/hub",
+  "license": "MIT"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "claude-code-community-events",
+  "owner": {
+    "name": "Nick Frith",
+    "email": "nf@s9t.dev"
+  },
+  "metadata": {
+    "description": "Plugins for contributing to Claude Code Community Events worldwide."
+  },
+  "plugins": [
+    {
+      "name": "claude-code-community-events",
+      "source": "./plugin",
+      "description": "Contribute event materials to the Claude Code Community Events hub. Handles cloning the repo, scaffolding your speaker folder, and guiding you through adding slides, demos, and other materials.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Nick Frith",
+        "email": "nf@s9t.dev"
+      },
+      "repository": "https://github.com/claude-code-community-events/hub",
+      "license": "MIT",
+      "tags": ["events", "community", "claude-code"]
+    }
+  ]
+}
