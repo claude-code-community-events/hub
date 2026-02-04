@@ -1,6 +1,6 @@
 /*              @claude-code-community-events/admins
 /.github/       @claude-code-community-events/admins
-/templates/     @claude-code-community-events/admins
-/scripts/       @claude-code-community-events/admins
-/tools/         @claude-code-community-events/admins
+/.claude/       @claude-code-community-events/admins
+/plugin/        @claude-code-community-events/admins
+/docs/          @claude-code-community-events/admins
 /events/        @claude-code-community-events/leaders

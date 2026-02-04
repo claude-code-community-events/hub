@@ -27,6 +27,8 @@ Every event in this repo maps to an event on `lu.ma/claudecommunity`. Event host
 
 The event folder's `README.md` contains an **Event Page** field with the Luma URL. Extract the URL from the event README at `events/YYYY/MM/YYYY-MM-DD-city/README.md`.
 
+The URL must be on `lu.ma` or `luma.com`. Any other domain fails validation — this prevents pointing to a fake event page on an attacker-controlled server.
+
 There must be exactly one Luma URL in the README. If the README contains zero or more than one Luma URL, the PR fails validation.
 
 If the PR is creating a new event folder, the README should be part of the PR's changed files.

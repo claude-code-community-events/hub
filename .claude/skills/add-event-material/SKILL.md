@@ -82,7 +82,7 @@ Remind contributors:
 - Photos: compress, max 2MB each
 - Videos/recordings: link only (YouTube, etc). Never commit video files.
 - Slides: PDF preferred (smaller than PPTX/Keynote)
-- No file over 50MB
+- No file over 2MB
 - Binary files are tracked by Git LFS
 
 ### Step 7: Verify and Summarize
@@ -90,7 +90,7 @@ Remind contributors:
 Confirm what was created. Remind the contributor to:
 - Review the generated files
 - Open a PR when ready
-- Ensure their GitHub username appears somewhere in the Luma event page (the automated validation checks this)
+- Ensure their GitHub username (prefixed with `@`) appears in the Luma event description (the automated validation checks this — only the description counts)
 
 ## Event Folder Naming Convention
 
